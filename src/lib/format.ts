@@ -1,0 +1,1 @@
+export function formatWib(value:string|Date,timeOnly=false){return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",...(timeOnly?{hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}:{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"})}).format(new Date(value)).replaceAll("/","-")+" WIB"}

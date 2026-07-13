@@ -1,0 +1,9 @@
+import { describe,expect,it } from "vitest";
+import { haversineMeters,lateMinutes,safeCsvCell,storageName,toCsv,validateCheckout } from "./domain";
+import { validateImage,locationSchema } from "./validation";
+
+describe("haversineMeters",()=>{it("nol untuk titik sama",()=>expect(haversineMeters({latitude:-6.2,longitude:106.8},{latitude:-6.2,longitude:106.8})).toBe(0));it("menghitung jarak Jakarta–Bandung secara wajar",()=>expect(haversineMeters({latitude:-6.2088,longitude:106.8456},{latitude:-6.9175,longitude:107.6191})).toBeGreaterThan(110_000));});
+describe("keterlambatan",()=>{it("memakai WIB dan toleransi",()=>expect(lateMinutes(new Date("2026-07-13T01:16:00Z"),"2026-07-13","08:00",10)).toBe(6));it("tepat waktu menghasilkan nol",()=>expect(lateMinutes(new Date("2026-07-13T01:08:00Z"),"2026-07-13","08:00",10)).toBe(0));});
+describe("validasi presensi",()=>{it("menolak checkout sebelum check-in",()=>expect(()=>validateCheckout("2026-07-13T08:00:00Z","2026-07-13T07:00:00Z")).toThrow());it("menerima checkout setelah check-in",()=>expect(validateCheckout("2026-07-13T08:00:00Z","2026-07-13T09:00:00Z")).toBe(true));it("menolak koordinat separuh",()=>expect(()=>locationSchema.parse({latitude:-6,longitude:null,accuracy:10})).toThrow());});
+describe("file",()=>{it("menolak MIME tidak valid",()=>expect(()=>validateImage(new File(["x"],"x.svg",{type:"image/svg+xml"}))).toThrow());it("membentuk path UUID unik",()=>{const a=storageName("10000000-0000-4000-8000-000000000001","20000000-0000-4000-8000-000000000001","in");const b=storageName("10000000-0000-4000-8000-000000000001","20000000-0000-4000-8000-000000000001","in");expect(a).not.toBe(b);expect(a).toMatch(/^10000000/)});});
+describe("CSV",()=>{it.each(["=SUM(1,1)","+cmd","-2+3","@evil"])("mencegah formula %s",v=>expect(safeCsvCell(v)).toContain("'"));it("menambahkan BOM dan escape quote",()=>expect(toCsv(["A"],[["te\"s"]])).toBe('\uFEFF"A"\r\n"te""s"'));});

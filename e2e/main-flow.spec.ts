@@ -1,0 +1,3 @@
+import { test,expect } from "@playwright/test";
+test("halaman login dan PWA shell tersedia",async({page})=>{await page.goto("/login");await expect(page.getByRole("heading",{name:"Rocky Booth Control"})).toBeVisible();await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href","/manifest.webmanifest")});
+test("login pekerja mengarah ke aplikasi",async({page})=>{test.skip(!process.env.DEMO_EMPLOYEE_EMAIL||!process.env.DEMO_EMPLOYEE_PASSWORD,"Kredensial demo belum diatur");await page.goto("/login");await page.getByLabel("Email").fill(process.env.DEMO_EMPLOYEE_EMAIL!);await page.getByLabel("Kata sandi").fill(process.env.DEMO_EMPLOYEE_PASSWORD!);await page.getByRole("button",{name:"Masuk"}).click();await expect(page).toHaveURL(/\/employee/)});

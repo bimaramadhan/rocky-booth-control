@@ -1,0 +1,1 @@
+import { requireRole } from "@/lib/auth";export default async function Profile(){const p=await requireRole("employee");return <><h1>Profil</h1><div className="card"><p><strong>{p.full_name}</strong></p><p>{p.email}</p><p>Role: Pekerja</p><small>Hubungi admin untuk perubahan data atau penugasan booth.</small></div></>}

@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+const allowed=new Set(["attendance-watermarked","stock-watermarked"]);
+export async function GET(_:Request,{params}:{params:Promise<{bucket:string;path:string[]}>}){const {bucket,path}=await params;if(!allowed.has(bucket))return NextResponse.json({error:"Tidak diizinkan"},{status:403});const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:"Login diperlukan"},{status:401});const {data:profile}=await supabase.from("profiles").select("role").eq("id",user.id).single();const key=path.join("/");if(profile?.role!=="admin"&&!key.startsWith(`${user.id}/`))return NextResponse.json({error:"Tidak diizinkan"},{status:403});const {data,error}=await createAdminClient().storage.from(bucket).createSignedUrl(key,60);if(error)return NextResponse.json({error:"Foto tidak ditemukan"},{status:404});return NextResponse.redirect(data.signedUrl,{headers:{"Cache-Control":"private, no-store"}})}

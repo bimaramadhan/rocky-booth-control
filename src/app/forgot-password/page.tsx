@@ -1,0 +1,4 @@
+"use client";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+export default function Forgot(){const [message,setMessage]=useState("");return <main className="container" style={{maxWidth:440,padding:"8vh 0"}}><h1>Atur ulang kata sandi</h1><form className="card" onSubmit={async e=>{e.preventDefault();const email=String(new FormData(e.currentTarget).get("email"));await createClient().auth.resetPasswordForEmail(email,{redirectTo:`${location.origin}/auth/callback?next=/employee/profile`});setMessage("Jika email terdaftar, tautan pemulihan telah dikirim.")}}><div className="field"><label>Email</label><input name="email" type="email" required/></div><button className="btn btn-primary" style={{marginTop:"1rem"}}>Kirim tautan</button>{message&&<p>{message}</p>}</form></main>}
