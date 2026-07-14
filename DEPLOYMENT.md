@@ -18,7 +18,11 @@ Pada 13-07-2026, [Netlify Pricing](https://www.netlify.com/pricing/) mencantumka
 2. Pastikan empat bucket foto tetap private dan satu booth berstatus aktif.
 3. Push kode ke branch production, lalu di Netlify pilih **Trigger deploy → Clear cache and deploy site**.
 4. Periksa Functions log untuk `ATTENDANCE_PHOTO_UPLOAD_FAILED` atau `STOCK_PHOTO_UPLOAD_FAILED` bila upload gagal.
-5. Foto dikompres di browser (maksimum sisi 1280 px, target sekitar 760 KB per foto) sebelum multipart dikirim. Ini membuat tiga foto stok berada di bawah batas request umum Netlify; jangan menghapus kompresi client.
+5. Foto dikompres di browser (maksimum sisi 1080 px, target sekitar 500 KB per foto) sebelum multipart dikirim. Ini membuat tiga foto stok berada di bawah batas request umum Netlify; jangan menghapus kompresi client.
+
+### Sharp dan libvips pada Netlify
+
+Pemrosesan watermark memakai Sharp. Repository memasang paket native Linux x64 secara eksplisit dan `netlify.toml` memaksa binding Sharp beserta libvips masuk ke artifact function. Jika log menampilkan `ERR_DLOPEN_FAILED` atau `libvips-cpp.so ... No such file`, pastikan deployment memakai commit terbaru lalu gunakan **Clear cache and deploy site** agar dependency Linux dipasang ulang; deploy cache lama dapat tetap membawa bundle function yang tidak lengkap.
 
 ## Vercel
 

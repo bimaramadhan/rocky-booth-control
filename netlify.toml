@@ -1,0 +1,18 @@
+[build]
+  command = "pnpm build"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[functions]
+  # Sharp adalah native dependency. OpenNext perlu membawa binding dan libvips
+  # Linux ke artifact function, bukan hanya JavaScript package `sharp`.
+  external_node_modules = [
+    "sharp",
+    "@img/sharp-linux-x64",
+    "@img/sharp-libvips-linux-x64"
+  ]
+  included_files = [
+    "node_modules/@img/sharp-linux-x64/**",
+    "node_modules/@img/sharp-libvips-linux-x64/**"
+  ]
