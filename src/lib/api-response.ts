@@ -2,8 +2,9 @@ import "server-only";
 import {NextResponse} from "next/server";
 import {ZodError} from "zod";
 
-export function apiSuccess<T>(data:T,status=200,warning:string|null=null){return NextResponse.json({success:true,data,warning},{status});}
-export function apiError(code:string,message:string,status=400){return NextResponse.json({success:false,error:{code,message}},{status});}
+const privateHeaders={"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"};
+export function apiSuccess<T>(data:T,status=200,warning:string|null=null){return NextResponse.json({success:true,data,warning},{status,headers:privateHeaders});}
+export function apiError(code:string,message:string,status=400){return NextResponse.json({success:false,error:{code,message}},{status,headers:privateHeaders});}
 export function publicError(error:unknown,fallback="Permintaan belum berhasil."){
   if(error instanceof ZodError)return {code:"INVALID_INPUT",message:error.issues[0]?.message||"Data yang dikirim belum lengkap.",status:400};
   const raw=error instanceof Error?error.message:"";
@@ -20,4 +21,3 @@ export function publicError(error:unknown,fallback="Permintaan belum berhasil.")
   if(/mime|format foto|ukuran foto/i.test(raw))return{code:"INVALID_PHOTO",message:raw,status:400};
   return{code:"SERVER_ERROR",message:fallback,status:500};
 }
-

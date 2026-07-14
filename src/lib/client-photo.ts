@@ -1,6 +1,6 @@
 "use client";
 
-export async function compressPhoto(file:File,{maxDimension=1280,maxBytes=760_000,quality=.82}={}){
+export async function compressPhoto(file:File,{maxDimension=1080,maxBytes=500_000,quality=.8}={}){
   if(!file.type.startsWith("image/"))throw new Error("File yang dipilih bukan foto.");
   const bitmap=await createImageBitmap(file,{imageOrientation:"from-image"});
   const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
@@ -14,4 +14,3 @@ export async function compressPhoto(file:File,{maxDimension=1280,maxBytes=760_00
   if(!blob)throw new Error("Foto tidak dapat dikompresi.");
   return new File([blob],`photo-${Date.now()}.jpg`,{type:"image/jpeg",lastModified:Date.now()});
 }
-

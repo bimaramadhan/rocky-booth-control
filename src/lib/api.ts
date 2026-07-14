@@ -11,8 +11,10 @@ export async function parseApiResponse<T>(response:Response):Promise<ApiResponse
   const contentType=response.headers.get("content-type")||"";
   if(!contentType.includes("application/json")){
     const text=(await response.text()).trim();
-    console.error("NON_JSON_API_RESPONSE",{status:response.status,contentType,preview:text.slice(0,160)});
-    throw new ApiRequestError("Server belum dapat memproses permintaan. Foto tetap tersimpan di perangkat; silakan coba lagi.","NON_JSON_RESPONSE",response.status);
+    const requestId=response.headers.get("x-nf-request-id")||response.headers.get("x-request-id")||undefined;
+    console.error("NON_JSON_API_RESPONSE",{status:response.status,contentType,requestId,preview:text.slice(0,160)});
+    const message=response.status===413?"Ukuran foto masih terlalu besar untuk server hosting. Ambil ulang foto lalu coba lagi.":`Server hosting belum dapat menjalankan proses foto (HTTP ${response.status||"gagal"}). Foto tetap tersimpan; silakan coba lagi.`;
+    throw new ApiRequestError(message,"NON_JSON_RESPONSE",response.status);
   }
   let payload:unknown;
   try{payload=await response.json();}catch(error){console.error("INVALID_JSON_API_RESPONSE",{status:response.status,error});throw new ApiRequestError("Respons server tidak dapat dibaca. Silakan coba lagi.","INVALID_JSON_RESPONSE",response.status);}
@@ -23,4 +25,3 @@ export async function parseApiResponse<T>(response:Response):Promise<ApiResponse
   }
   return payload as ApiResponse<T>;
 }
-
