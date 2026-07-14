@@ -30,7 +30,7 @@ Buka `http://localhost:3000`. Isi env terlebih dahulu agar login dan halaman ter
 ## Setup Supabase
 
 1. Buat project di dashboard Supabase tanpa memasukkan secret ke repository.
-2. Jalankan `supabase link --project-ref PROJECT_ID`, lalu `supabase db push`; alternatifnya tempel berurutan isi `supabase/migrations/*.sql` di SQL Editor.
+2. Jalankan `supabase link --project-ref PROJECT_ID`, lalu `supabase db push`; alternatifnya tempel berurutan `202607130001_initial.sql` lalu `202607140001_single_booth_workflow.sql` di SQL Editor.
 3. Jalankan `supabase/seed.sql`. Migration sudah membuat empat bucket private beserta policy: `attendance-originals`, `attendance-watermarked`, `stock-originals`, `stock-watermarked`.
 4. Di Authentication → URL Configuration, isi Site URL dan redirect URL `https://DOMAIN/auth/callback`.
 5. Buat akun demo/admin dengan prosedur di bawah.
@@ -58,7 +58,7 @@ Jangan simpan password di git. Setelah migration dan seed, set env pada terminal
 pnpm exec dotenv -e .env.local -- node scripts/create-demo-users.mjs
 ```
 
-Jika `dotenv-cli` tidak dipasang, ekspor env di shell lalu `node scripts/create-demo-users.mjs`. Script membuat satu admin dan satu pekerja, serta assignment booth. Buat jadwal hari ini dari Admin → Pekerja & jadwal. Admin selanjutnya dapat menambah pekerja dari UI.
+Jika `dotenv-cli` tidak dipasang, ekspor env di shell lalu `node scripts/create-demo-users.mjs`. Script membuat satu admin dan satu pekerja beserta assignment booth. Jadwal harian tidak wajib pada mode satu booth; shift aktif pertama dipakai otomatis, dan migration membuat Shift Utama bila belum ada. Admin selanjutnya dapat menambah pekerja dari UI.
 
 ## Koordinat booth
 
@@ -111,11 +111,57 @@ PWA menyimpan shell halaman publik agar dapat dibuka. Aplikasi tidak pernah mena
 
 ## Troubleshooting
 
-- `schedule_not_found`: admin perlu membuat jadwal untuk tanggal hari ini.
+- `BOOTH_NOT_CONFIGURED`: pastikan tepat satu booth aktif tersedia dan koordinat booth sudah diisi.
 - Kamera/lokasi tidak muncul: gunakan HTTPS atau localhost dan cek izin browser.
-- Upload ditolak: pastikan MIME JPEG/PNG/WebP, ukuran di bawah `MAX_PHOTO_BYTES`, dan bucket private tersedia.
-- `new row violates row-level security`: cek assignment aktif, jadwal, tanggal WIB, serta profile Auth.
+- Upload ditolak: pastikan MIME JPEG/PNG/WebP, bucket private tersedia, dan secret server benar. Browser mengompres foto sebelum mengirim agar tiga foto stok tetap aman terhadap batas request host.
+- `new row violates row-level security`: jalankan migration terbaru, cek profile pekerja aktif, satu booth aktif/assignment, dan tanggal WIB.
 - Project Supabase pause: buka dashboard untuk mengaktifkan kembali lalu pertimbangkan aktivitas/upgrade yang sesuai.
 - Foto tidak tampil: cek secret key hanya di host server dan path private bucket; signed URL berlaku singkat.
 
 Panduan pengguna: [USER_GUIDE_ADMIN.md](USER_GUIDE_ADMIN.md) dan [USER_GUIDE_EMPLOYEE.md](USER_GUIDE_EMPLOYEE.md).
+
+## Alur operasional satu booth
+
+- Pekerja membuka Beranda dan hanya melihat satu aksi yang relevan: Presensi Masuk → Cek Stok → Presensi Pulang.
+- Presensi memakai kamera depan; stok memakai kamera belakang dan wajib tepat tiga kategori foto.
+- Cek stok tidak memerlukan schedule. Pekerja hanya mengisi jumlah fisik dan catatan opsional melalui wizard lima langkah.
+- Satu laporan stok final diizinkan per pekerja/booth/tanggal. Admin dapat menandai laporan valid, perlu diperiksa, ditolak, atau membuka ulang laporan dengan konfirmasi agar pekerja dapat mengirim ulang.
+- Admin melihat jam masuk/pulang, status stok, foto ber-watermark, riwayat, serta dapat mengubah booth, pekerja, dan item stok.
+
+## Konfigurasi satu booth dan item stok
+
+1. Login sebagai admin, buka **Booth**, dan pastikan hanya satu record berstatus aktif. Isi nama, alamat, latitude, longitude, dan radius presensi.
+2. Buka **Pekerja** untuk membuat satu akun pekerja. Password awal minimal delapan karakter dan harus diberikan secara privat.
+3. Buka **Master stok**, tambahkan nama item, satuan, dan stok minimum. Item baru otomatis ditautkan ke semua booth aktif.
+4. `supabase/seed.sql` menyediakan contoh booth, item, dan checklist. Sesuaikan semua contoh sebelum produksi.
+
+## Storage dan RLS
+
+Migration membuat empat bucket private: `attendance-originals`, `attendance-watermarked`, `stock-originals`, dan `stock-watermarked`. Browser tidak memiliki policy upload langsung; route server memvalidasi sesi, menentukan `user_id` dari sesi, memproses Sharp pada Node.js runtime, mengunggah dengan service role, lalu memverifikasi file sebelum menyatakan sukses. Admin dan pemilik file membuka foto melalui signed URL berumur 60 detik.
+
+RLS membatasi pekerja pada profile dan record miliknya. Helper `can_use_active_booth` mengizinkan pekerja aktif memakai satu-satunya booth aktif tanpa schedule; bila lebih dari satu booth aktif, assignment tetap diperlukan. Pekerja tidak memiliki policy untuk mengubah role, attendance final, stock check final, verifikasi, atau audit log.
+
+## Debugging upload foto
+
+Error `Unexpected token 'I', "Internal S" is not valid JSON` sebelumnya terjadi saat frontend memanggil `response.json()` terhadap halaman/plain text `Internal Server Error`. Sekarang semua route upload membungkus proses dalam `try-catch` dan memakai envelope JSON seragam; helper browser lebih dulu memeriksa `content-type`, sehingga UI tidak crash dan preview tetap tersedia untuk retry.
+
+Jika upload masih gagal:
+
+1. Buka Netlify **Logs → Functions** dan cari `ATTENDANCE_PHOTO_UPLOAD_FAILED` atau `STOCK_PHOTO_UPLOAD_FAILED`. Log tidak berisi token atau foto.
+2. Cocokkan `NEXT_PUBLIC_SUPABASE_URL`, publishable key, dan `SUPABASE_SECRET_KEY` dengan project yang sama. Jangan memakai placeholder `project_id.supabase.co`.
+3. Di Supabase Storage, pastikan keempat bucket ada, private, dan nama persis sama.
+4. Di SQL Editor, pastikan kedua migration berhasil dan profile Auth memiliki row `profiles` aktif.
+5. Periksa Network browser: route harus mengembalikan JSON pada kegagalan. Status 413 dari host berarti request terlalu besar; pastikan versi terbaru dengan kompresi browser sudah terdeploy.
+
+## Deploy ulang dan smoke test
+
+Push commit ke branch yang dipantau Netlify atau tekan **Deploys → Trigger deploy → Clear cache and deploy site**. Setelah sukses, pastikan environment production lengkap, ubah `NEXT_PUBLIC_APP_URL`, lalu tambahkan domain HTTPS di Supabase Authentication URL Configuration.
+
+Smoke test dari ponsel nyata:
+
+1. Login pekerja, izinkan kamera/lokasi, presensi masuk, lalu pastikan dashboard berubah dan foto tampil di detail admin.
+2. Tanpa membuat schedule, selesaikan wizard stok, ambil tiga foto, dan pastikan detail, checklist, foto, serta timestamp tampil pada admin.
+3. Presensi pulang dan pastikan record presensi yang sama mendapat jam pulang dan durasi.
+4. Matikan koneksi saat form berisi foto; pastikan pesan manusiawi dan tombol Coba Lagi muncul tanpa menghapus preview.
+5. Coba file MIME salah/API non-JSON pada lingkungan test; UI tidak boleh crash.
+6. Pastikan pekerja tidak dapat membuka URL foto user lain atau halaman `/admin`.

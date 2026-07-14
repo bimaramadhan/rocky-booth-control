@@ -12,6 +12,14 @@ Pada 13-07-2026, [Netlify Pricing](https://www.netlify.com/pricing/) mencantumka
 6. Uji login, kamera/lokasi dari ponsel, upload, signed photo, CSV, dan logout.
 7. Pantau kredit. Foto disajikan dari Supabase, tetapi function compute dan web request tetap mengonsumsi alokasi Netlify.
 
+### Urutan rilis perubahan ini
+
+1. Jalankan `supabase db push` terlebih dahulu agar migration `202607140001_single_booth_workflow.sql` aktif.
+2. Pastikan empat bucket foto tetap private dan satu booth berstatus aktif.
+3. Push kode ke branch production, lalu di Netlify pilih **Trigger deploy → Clear cache and deploy site**.
+4. Periksa Functions log untuk `ATTENDANCE_PHOTO_UPLOAD_FAILED` atau `STOCK_PHOTO_UPLOAD_FAILED` bila upload gagal.
+5. Foto dikompres di browser (maksimum sisi 1280 px, target sekitar 760 KB per foto) sebelum multipart dikirim. Ini membuat tiga foto stok berada di bawah batas request umum Netlify; jangan menghapus kompresi client.
+
 ## Vercel
 
 Import repo, framework Next.js, Node 24, isi env, deploy, lalu atur URL Supabase seperti di atas. [Vercel Pricing](https://vercel.com/pricing) menyebut Hobby untuk personal/non-komersial; jangan gunakan Hobby untuk operasional booth komersial tanpa memastikan eligibility. Gunakan paket yang sesuai atau Netlify Free.
@@ -26,8 +34,8 @@ Domain bawaan host gratis sudah HTTPS dan cukup untuk kamera/PWA. Untuk domain s
 
 ## Checklist rilis
 
-- Migration/seed selesai; bucket tetap private.
-- Koordinat/radius booth valid dan jadwal tersedia.
+- Kedua migration/seed selesai; bucket tetap private.
+- Tepat satu booth aktif dan koordinat/radiusnya valid; jadwal harian tidak wajib.
 - Secret tidak tampak pada bundle atau log.
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` lulus.
 - Auth redirect production tepat; reset password diuji.

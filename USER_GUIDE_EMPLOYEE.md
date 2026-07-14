@@ -1,11 +1,13 @@
 # Panduan Pekerja
 
-1. Login memakai email/password. Pastikan nama booth dan jadwal hari ini benar.
-2. Buka Presensi, izinkan lokasi, dan perhatikan akurasinya. Di atas 100 m akan diberi peringatan.
-3. Buka kamera belakang, ambil foto aktual yang jelas, tinjau preview, lalu kirim. Tunggu konfirmasi server; jangan menganggap spinner sebagai sukses.
-4. Presensi di luar radius atau tanpa lokasi tetap tersimpan tetapi ditandai untuk admin.
-5. Isi Cek Stok: awal, masuk, pemakaian, fisik, checklist, kendala, dan 1–5 foto. Kirim dan tunggu konfirmasi.
-6. Saat pulang, kembali ke Presensi, ambil foto baru, dan kirim pulang. Pulang tidak dapat dilakukan sebelum masuk.
-7. Riwayat hanya memuat data Anda dan catatan tidak dapat diedit/dihapus.
+1. Login memakai email dan kata sandi dari admin. Booth aktif dipilih otomatis; pekerja tidak perlu memilih booth, shift, atau jadwal.
+2. Dari Beranda, tekan tombol aksi utama. Sebelum masuk tombolnya **Presensi Masuk**, setelah masuk menjadi **Cek Stok**, lalu **Presensi Pulang**.
+3. Untuk presensi, izinkan kamera depan dan lokasi. Posisikan wajah di panduan, ambil foto, tinjau, lalu kirim. Preview dibuat seperti cermin, tetapi file akhirnya berorientasi normal.
+4. Untuk cek stok, ikuti lima langkah: baca petunjuk, isi jumlah fisik, ambil tepat tiga foto dengan kamera belakang, isi kondisi booth, lalu periksa ringkasan dan kirim.
+5. Pada jumlah stok, gunakan tombol −/+, ketik angka, atau tekan **Habis**. Label berubah otomatis menjadi Aman, Menipis, atau Habis.
+6. Tiga foto wajib adalah freezer/stok ayam, rak bahan dan kemasan, serta area booth. Foto belum diunggah sampai tombol kirim pada langkah terakhir ditekan.
+7. Tunggu timestamp server pada layar sukses. Spinner atau preview bukan bukti bahwa data sudah tersimpan.
+8. Jika pengiriman gagal, jangan tutup halaman. Foto dan isian tetap ada; periksa internet lalu tekan **Coba Lagi**. Waktu resmi adalah saat server menerima data.
+9. Profil memuat ringkasan bulanan dan dapat dipakai mengubah nama tampilan, telepon, atau kata sandi. Role, booth, dan laporan final hanya dapat diubah admin.
 
-Jika internet putus, jangan menutup halaman atau menghapus foto. Tekan kirim ulang setelah koneksi stabil. Waktu resmi adalah saat server menerima data. Browser tertentu dapat menampilkan galeri meski aplikasi meminta kamera; selalu gunakan foto yang baru diambil.
+Presensi atau stok tanpa lokasi tetap dapat tersimpan, tetapi ditandai untuk diperiksa admin. Browser tertentu dapat menawarkan galeri meski aplikasi meminta kamera; selalu ambil foto kondisi aktual.
