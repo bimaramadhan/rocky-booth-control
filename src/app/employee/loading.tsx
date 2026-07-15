@@ -1,0 +1,1 @@
+export default function EmployeeLoading(){return <div className="page-loading" role="status" aria-live="polite"><div className="loading-line short"/><div className="loading-line title"/><div className="loading-card"><div className="loading-line"/><div className="loading-line"/><div className="loading-line medium"/></div><span>Memuat halaman…</span></div>}
