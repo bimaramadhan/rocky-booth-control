@@ -1,4 +1,3 @@
-import Link from "next/link";import { requireRole } from "@/lib/auth";import { LogoutButton } from "@/components/logout-button";
+import {requireRole} from "@/lib/auth";import {AdminSidebar} from "@/components/admin-sidebar";
 export const dynamic="force-dynamic";
-const links=[["/admin","Ringkasan"],["/admin/attendance","Presensi"],["/admin/stock-checks","Cek stok"],["/admin/employees","Pekerja"],["/admin/booths","Booth"],["/admin/stock-items","Item stok"],["/admin/reports","Laporan"],["/admin/audit-logs","Audit log"],["/admin/settings","Pengaturan"]];
-export default async function AdminLayout({children}:{children:React.ReactNode}){const p=await requireRole("admin");return <div className="admin-layout"><aside className="sidebar"><h2>🐓 Rocky Control</h2><small>{p.full_name}</small><nav style={{marginTop:16}}>{links.map(([h,l])=><Link key={h} href={h}>{l}</Link>)}</nav><div style={{marginTop:20}}><LogoutButton/></div></aside><main className="admin-main">{children}</main></div>}
+export default async function AdminLayout({children}:{children:React.ReactNode}){const profile=await requireRole("admin");return <div className="admin-layout"><AdminSidebar fullName={profile.full_name}/><main className="admin-main"><div className="admin-content">{children}</div></main></div>}
